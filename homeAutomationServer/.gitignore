@@ -1,0 +1,7 @@
+*.json
+env
+.pytest_cache
+.coverage
+*.xml
+*.sqlite
+*.log
