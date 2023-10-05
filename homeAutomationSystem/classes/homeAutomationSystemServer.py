@@ -1,5 +1,5 @@
 import eventlet
-eventlet.monkey_patch()
+eventlet.monkey_patch(os=True,select=True,socket=True,thread=True,time=True)
 
 import threading
 import socketio
@@ -148,8 +148,7 @@ class HomeAutomationSystemServer(socketio.Namespace):
         #listenClient.start()
 
         while self.running:
-            print("ruuuunnn")
-            time.sleep(10)
+            time.sleep(0.1)
 
         listenHomeAutomationServer.join()
         #listenClient.join()

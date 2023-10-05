@@ -3976,14 +3976,15 @@ class Network:
 
     def send_light_controller_color_updated_event(self, event):
         succes = False
+        
 
         #event.serialize()
         #and isinstance(event, ZWaveLightColorModified)
 
         if self.server != False:
             try:
-                time.sleep(0.1)
                 self.server.emit('light_controller_color_updated', {}, namespace='/HomeAutomationServer')
+                self.server.sleep(0.1)
                 succes = True
             except:
                 succes = False

@@ -1,4 +1,5 @@
 import eventlet
+eventlet.monkey_patch(os=True,select=True,socket=True,thread=True,time=True)
 
 import socketio
 import sys
@@ -11,11 +12,10 @@ sys.path.append("..")
 
 import json
 
-from homeAutomationServer.homeAutomationEngine.classes.homeAutomationEngine import *
-
-socketIoServer = socketio.Server(cors_allowed_origins="*", ping_timeout=60, logger=True, engineio_logger=True)
+socketIoServer = socketio.Server(async_mode='eventlet', cors_allowed_origins="*", ping_timeout=60, logger=True, engineio_logger=True)
 app = socketio.WSGIApp(socketIoServer, object)
 
+from homeAutomationServer.homeAutomationEngine.classes.homeAutomationEngine import *
 
 class HomeAutomationServer(socketio.Namespace):
     """
@@ -34,7 +34,7 @@ class HomeAutomationServer(socketio.Namespace):
     def __init__(self, scriptPath):
         self.scriptPath = scriptPath
         self.configFilePath = scriptPath + "/configs/homeAutomationServerConfig.json"
-
+        
         self.load_home_automation_engine(self)
 
         socketio.Namespace.__init__(self, '/HomeAutomationServer')
@@ -226,7 +226,6 @@ class HomeAutomationServer(socketio.Namespace):
                 succes = True
             else:
                 succes = False
-                pass
         else:
             succes = False
 
@@ -265,7 +264,13 @@ class HomeAutomationServer(socketio.Namespace):
 
 
     def run(self):
-        self.listen_clients()
+        listen_clients = threading.Thread(target=self.listen_clients)
+        listen_clients.start()
+        
+
+        while True:
+            #HomeAutomationServer.homeAutomationEngine.zWaveNetwork.send_light_controller_color_updated_event(False)
+            time.sleep(0.1)
 
 
     def serialize(self):
@@ -809,10 +814,9 @@ class HomeAutomationServer(socketio.Namespace):
     ###CLIENTS REQUESTS###
     """CONNECTION EVENT"""
     @socketIoServer.event(namespace='/HomeAutomationServer')
-    def connect(sid, environ, auth):
+    def connect(sid, environ):
         print('client connecté ', sid)
         HomeAutomationServer.homeAutomationEngine.zWaveNetwork.send_light_controller_color_updated_event(False)
-                
 
 
     """GET REQUESTS"""
